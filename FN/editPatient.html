@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>ระบบงานเวชระเบียน</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+        }
+        
+        body {
+            background-color: #E8F4F8;  /* Changed to match the second style */
+            min-height: 100vh;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #ffffff;
+            color: rgb(0, 0, 0);
+            box-shadow: -1px 9px 16px 0px rgba(0,0,0,0.15);
+            z-index: 1000;
+            height: 72px;
+        }
+        
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .nav-subtitle {
+            color: #000000;
+            font-size: 14px;
+        }
+        
+        .nav-datetime {
+            color: #000000;
+            font-size: 14px;
+        }
+        
+        .search-bar {
+            position: absolute;
+            right: 24px;
+            top: 16px;
+        }
+        
+        .search-input {
+            padding: 8px 16px;
+            border: 1px solid #E2E8F0;
+            border-radius: 24px;
+            width: 300px;
+            font-size: 14px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 72px;
+            left: 0;
+            width: 240px;
+            height: calc(100vh - 72px);
+            background: #FFFFFF;
+            padding: 24px;
+            border-right: 1px solid #E2E8F0;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sidebar a {
+            text-decoration: none;
+            color: #2D3748;
+        }
+        
+        .menu-item {
+            display: block;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .menu-item.active {
+            background-color: #EBF8FF;
+            color: #2B6CB0;
+        }
+        
+        .menu-item:hover:not(.active) {
+            background-color: #F7FAFC;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            margin-top: 72px;
+            padding: 24px;
+        }
+        
+        .content-wrapper {
+            max-width: calc(100vw - 260px);
+            margin: 0 4px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Patient List Styles */
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .patient-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2D3748;
+        }
+        
+        .patient-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .patient-card {
+            background: #F7FAFC;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .patient-card:hover {
+            background-color: #EDF2F7;
+        }
+        
+        /* Edit Form Styles */
+        .edit-form {
+            display: none;
+            padding: 24px;
+            background: #F7FAFC;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+        
+        .info-group {
+            margin-bottom: 16px;
+        }
+        
+        .info-group label {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .info-group input,
+        .info-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #E2E8F0;
+            border-radius: 4px;
+        }
+        
+        /* Button Styles */
+        button {
+            padding: 10px 20px;
+            background-color: #4299E1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #3182CE;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        
+            .main-content {
+                margin-left: 0;
+            }
+        
+            .search-bar {
+                position: relative;
+                right: auto;
+                top: auto;
+                margin-top: 16px;
+            }
+        
+            .search-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <div>
+                    <div class="nav-title">ระบบงานเวชระเบียน</div>
+                    <div class="nav-subtitle">เจ้าหน้าที่: คุณรัตนธดี มีความสุข</div>
+                </div>
+            </div>
+            <div class="nav-datetime"></div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="ค้นหา HN /ชื่อผู้ป่วย" id="search-input">
+            </div>
+        </nav>
+
+   <!-- Sidebar -->
+   <div class="sidebar">
+    <a href="index.html" class="menu-item ">แดชบอร์ด</a>
+    <a href="newPatient.html" class="menu-item ">ลงทะเบียนผู้ป่วยใหม่</a>
+    <a href="editPatient.html" class="menu-item active">จัดการข้อมูลผู้ป่วย</a>
+    <a href="medical_info.html" class="menu-item">ข้อมูลทางการแพทย์</a>
+    </div>
+
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="patient-header">
+                <h1 class="patient-title">ข้อมูลผู้ป่วย</h1>
+            </div>
+    
+            <div class="patient-list" id="patient-list">
+                <!-- Patient cards will be inserted here -->
+            </div>
+    
+            <div class="edit-form" id="edit-form">
+                <!-- <h2>แก้ไขข้อมูลผู้ป่วย</h2> -->
+                <form id="patient-edit-form">
+                    <div class="info-group">
+                        <label for="first_name">FIRST NAME</label>
+                        <input type="text" id="first_name" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="last_name">LAST NAME</label>
+                        <input type="text" id="last_name" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="date_of_birth">DOB</label>
+                        <input type="date" id="date_of_birth" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="blood_group">BLOOD GROUP</label>
+                        <select id="blood_group" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+                    </div>
+                    <div class="info-group">
+                        <label for="gender">GENDER</label>
+                        <select id="gender" required>
+                            <option value="M">เพศชาย</option>
+                            <option value="F">เพศหญิง</option>
+                        </select>
+                    </div>
+                    <div class="info-group">
+                        <label for="hx_smoking">SMOKING</label>
+                        <input type="text" id="hx_smoking" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="right_id">RIGHT ID</label>
+                        <input type="text" id="right_id" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="allergy">ALLERGY</label>
+                        <input type="text" id="allergy" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="appointment_date">APPOINTMENT DATE</label>
+                        <input type="date" id="appointment_date" required>
+                    </div>
+                    <div class="info-group">
+                        <label for="doctor">DOCTOR NAME-DEPARTMENT</label>
+                        <input type="text" id="doctor" required>
+                    </div>
+                    <button type="submit">บันทึก</button>
+                    <button type="button" id="cancel-button" style="margin-left: 10px;">ยกเลิก</button>
+                    <button type="button" id="back-button" style="margin-left: 10px;">กลับ</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentPatientId = null; // To track the currently selected patient
+        let patientDataList = []; // To store the fetched patient data
+
+        // Function to fetch patients based on search input
+        async function fetchPatients(query) {
+            try {
+                const response = await fetch(`https://med-rights-bn-final.vercel.app/api/patients/search?query=${query}`);
+                if (!response.ok) throw new Error('Failed to fetch patient data');
+                patientDataList = await response.json(); // Store fetched data
+                displayPatients(patientDataList); // Display patients based on search
+            } catch (error) {
+                console.error('Error fetching patients:', error);
+            }
+        }
+
+        // Function to display patients
+        function displayPatients(patients) {
+            const patientList = document.getElementById('patient-list');
+            patientList.innerHTML = ''; // Clear previous entries
+
+            if (patients.length === 0) {
+                patientList.innerHTML = '<p>ไม่พบข้อมูล</p>'; // No patients found message
+                return;
+            }
+
+            patients.forEach(patient => {
+                const patientItem = document.createElement('div');
+                patientItem.className = 'patient-card';
+                patientItem.innerHTML = `
+                    <h3>${patient.first_name} ${patient.last_name}</h3>
+                    <p>HN: ${patient.patient_id}</p>
+                `;
+                patientItem.addEventListener('click', () => {
+                    loadPatientData(patient); // Load patient data for editing
+                });
+                patientList.appendChild(patientItem);
+            });
+        }
+
+        // Function to load patient data for editing
+        async function loadPatientData(patient) {
+            currentPatientId = patient.patient_id; // Store current patient ID
+            document.getElementById('first_name').value = patient.first_name;
+            document.getElementById('last_name').value = patient.last_name;
+            document.getElementById('date_of_birth').value = patient.date_of_birth.split('T')[0]; // Format YYYY-MM-DD
+            document.getElementById('blood_group').value = patient.blood_group;
+            document.getElementById('gender').value = patient.gender;
+
+            // Fetch appointment data linked by APPT_ID
+            if (patient.appt_id) {
+                const appointmentResponse = await fetch(`https://med-rights-bn-final.vercel.app/api/appointments/${patient.appt_id}`);
+                if (appointmentResponse.ok) {
+                    const appointment = await appointmentResponse.json();
+                    document.getElementById('appointment_date').value = appointment.appointment_date.split('T')[0]; // Format YYYY-MM-DD
+                }
+            }
+
+            document.getElementById('hx_smoking').value = patient.hx_smoking ? 'Yes' : 'No'; // Convert to Yes/No
+            document.getElementById('right_id').value = patient.right_id || ''; // New field
+            document.getElementById('allergy').value = patient.allergy || '';
+            document.getElementById('doctor').value = patient.doctor || '';
+
+            document.getElementById('edit-form').style.display = 'block'; // Show the edit form
+            document.getElementById('patient-list').style.display = 'none'; // Hide the patient list
+        }
+
+        // Event listener for the search input
+        document.getElementById('search-input').addEventListener('input', function () {
+            const searchValue = this.value.toLowerCase().trim();
+            fetchPatients(searchValue); // Fetch patients based on search input
+        });
+
+        // Handle form submission
+        document.getElementById('patient-edit-form').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Create patient data object
+            const patientData = {
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                date_of_birth: document.getElementById('date_of_birth').value,
+                blood_group: document.getElementById('blood_group').value,
+                gender: document.getElementById('gender').value,
+                hx_smoking: document.getElementById('hx_smoking').value.toLowerCase() === 'yes',
+                right_id: document.getElementById('right_id').value,
+                allergy: document.getElementById('allergy').value,
+                appointment_date: document.getElementById('appointment_date').value,
+                doctor: document.getElementById('doctor').value
+            };
+
+            // Send PUT request to update patient data
+            try {
+                const response = await fetch(`https://med-rights-bn-final.vercel.app/api/patients/edit`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ...patientData, patient_id: currentPatientId }) // Include patient_id in body
+                });
+
+                if (!response.ok) throw new Error('Failed to update patient data');
+
+                alert('ข้อมูลผู้ป่วยถูกบันทึกเรียบร้อยแล้ว!');
+                resetForm(); // Reset and hide the form
+                fetchPatients(''); // Refresh the patient list immediately after editing
+            } catch (error) {
+                console.error('Error updating patient data:', error);
+                alert('มีข้อผิดพลาดในการบันทึกข้อมูล!');
+            }
+        });
+
+        // Cancel button functionality
+        document.getElementById('cancel-button').addEventListener('click', function () {
+            resetForm(); // Reset and hide the form
+            displayPatients(patientDataList); // Show the patient list again
+        });
+
+        // Back button functionality
+        document.getElementById('back-button').addEventListener('click', function () {
+            resetForm(); // Reset and hide the form
+            displayPatients(patientDataList); // Show the patient list again
+        });
+
+        // Reset form function
+        function resetForm() {
+            document.getElementById('edit-form').style.display = 'none'; // Hide the edit form
+            document.getElementById('patient-edit-form').reset(); // Reset form fields
+            currentPatientId = null; // Clear current patient ID
+            document.getElementById('patient-list').style.display = 'grid'; // Show the patient list in grid format
+        }
+
+        // Fetch and display patients on page load
+        window.onload = function () {
+            fetchPatients(''); // Fetch all patients
+        };
+    </script>
+</body>
+
+</html>

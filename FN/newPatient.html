@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>ระบบงานเวชระเบียน</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Sarabun", sans-serif;
+        }
+
+        body {
+            background-color: #E8F4F8;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #ffffff;
+            color: rgb(0, 0, 0);
+            -webkit-box-shadow: -1px 9px 16px 0px rgba(0,0,0,0.15); 
+            box-shadow: -1px 9px 16px 0px rgba(0,0,0,0.15);
+            z-index: 1000;
+            height: 72px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .nav-subtitle {
+            color: #000000;
+            font-size: 14px;
+        }
+
+        .nav-datetime {
+            color: #000000;
+            font-size: 14px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 72px;
+            left: 0;
+            width: 240px;
+            height: calc(100vh - 72px);
+            background: #FFFFFF;
+            padding: 24px;
+            border-right: 1px solid #E2E8F0;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #2D3748;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .menu-item.active {
+            background-color: #EBF8FF;
+            color: #2B6CB0;
+        }
+
+        .menu-item:hover:not(.active) {
+            background-color: #F7FAFC;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            margin-top: 92px;
+            padding: 8px;
+        }
+
+        .content-wrapper {
+            max-width: calc(100vw - 260px);
+            margin: 0 4px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styles */
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #2C5282;
+        }
+
+        .hn-number {
+            background: #EBF8FF;
+            color: #2B6CB0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #2B6CB0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2C5282;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #EBF8FF;
+            padding-bottom: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #2D3748;
+        }
+
+        .form-note {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #F7FAFC;
+            font-family: "Sarabun", sans-serif;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #4299E1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            outline: none;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            font-family: "Sarabun", sans-serif;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background: #2B6CB0;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2C5282;
+        }
+
+        .btn-danger {
+            background: #E53E3E;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #C53030;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 4px;
+            }
+
+            .content-wrapper {
+                max-width: 100%;
+                margin: 0;
+                padding: 16px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div>
+                <div class="nav-title">ระบบงานเวชระเบียน</div>
+                <div class="nav-subtitle">เจ้าหน้าที่: คุณรัตนธดี มีความสุข</div>
+            </div>
+        </div>
+        <div class="nav-datetime">
+            Cannot Load Date!
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="index.html" class="menu-item ">แดชบอร์ด</a>
+        <a href="newPatient.html" class="menu-item active">ลงทะเบียนผู้ป่วยใหม่</a>
+        <a href="editPatient.html" class="menu-item">จัดการข้อมูลผู้ป่วย</a>
+        <a href="medical_info.html" class="menu-item">ข้อมูลทางการแพทย์</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <div class="form-header">
+                <h1 class="form-title">ลงทะเบียนผู้ป่วย</h1>
+            </div>
+
+            <div class="hn-number">
+                <strong><span id="hn-number">Loading...</span></strong>
+            </div>
+
+            <form id="patientForm">
+                <section>
+                    <h2 class="section-title">1.ข้อมูลส่วนตัว</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">ชื่อ</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">นามสกุล</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">วันเกิด</label>
+                            <input type="date" class="form-control" name="date_of_birth" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">กรุ๊ปเลือด</label>
+                            <select class="form-control" name="blood_group" required>
+                                <option value="" disabled selected>เลือกกรุ๊ปเลือด</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="AB">AB</option>
+                                <option value="O">O</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">เพศ</label>
+                            <select class="form-control" name="gender" required>
+                                <option value="M">เพศชาย</option>
+                                <option value="F">เพศหญิง</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">เบอร์โทรศัพท์ที่ติดต่อได้</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ที่อยู่</label>
+                            <textarea class="form-control" name="address" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ประวัติการแพ้</label>
+                            <textarea class="form-control" name="allergy" placeholder="ระบุอาการแพ้"></textarea>
+                        </div>
+
+                    </div>
+                </section>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">บันทึก</button>
+                    <button type="button" class="btn btn-danger">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('patientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+    
+            try {
+                const response = await fetch('https://med-rights-bn-final.vercel.app/api/patients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+    
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`Patient registered successfully! Patient ID: ${result.patient_id}`);
+                    this.reset(); // Reset the form after successful submission
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while registering the patient.');
+            }
+        });
+
+        async function fetchLatestHN() {
+            try {
+                const response = await fetch('https://med-rights-bn-final.vercel.app/api/latest-hn'); // Adjust this URL to your actual endpoint
+                if (!response.ok) {
+                    throw new Error('Failed to fetch HN number');
+                }
+                const data = await response.json();
+                document.getElementById('hn-number').textContent = data.latest_hn; // Assume the API returns { latest_hn: 'HN6800001' }
+            } catch (error) {
+                console.error('Error fetching latest HN:', error);
+                document.getElementById('hn-number').textContent = 'Error loading HN'; // Handle the error gracefully
+            }
+        }
+        
+        // Call the function to fetch the latest HN number on page load
+        fetchLatestHN();
+    
+        function updateDateTime() {
+            const now = new Date();
+            const thaiMonths = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+            
+            const day = now.getDate();
+            const month = thaiMonths[now.getMonth()];
+            const year = now.getFullYear() + 543; // Convert to Buddhist year
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12; // Convert to 12-hour format
+    
+            document.querySelector('.nav-datetime').textContent = 
+                `${day} ${month} ${year} | ${displayHours}:${minutes} ${period}`;
+        }
+    
+        // Update datetime immediately and then every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html>

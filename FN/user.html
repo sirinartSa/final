@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลทางการแพทย์</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f8ff;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 30px;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h2 {
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 22px;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+        .sidebar ul li a {
+            color: #000000;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .container {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            max-width: 1000px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-add:hover {
+            background-color: #218838;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 8px;
+            background: white;
+        }
+        .search-box input {
+            border: none;
+            outline: none;
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+        }
+        .search-box button {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .search-box button:hover {
+            background: #138496;
+        }
+        .time-zone {
+            font-size: 16px;
+            color: #555;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+            margin-top: 10px;
+            background: #ffffff;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            font-size: 16px;
+        }
+        th {
+            background-color: #e5e7eb;
+            color: #000000;
+        }
+        td {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .status {
+            background-color: green;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .btn-edit {
+            background-color: orange;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-edit:hover {
+            background-color: #e69500;
+        }
+        .btn-delete {
+            background-color: red;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-delete:hover {
+            background-color: #cc0000;
+        }
+        .menu-item.active {
+            background-color: #cce5ff;
+            color: #007bff;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<script>
+    function updateTime() {
+        const timeZoneElement = document.querySelector(".time-zone");
+        const now = new Date();
+
+        const options = {
+            timeZone: "Asia/Bangkok",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        };
+
+        const formatter = new Intl.DateTimeFormat("th-TH", options);
+        timeZoneElement.textContent = formatter.format(now);
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+
+
+    document.querySelectorAll(".sidebar ul li a").forEach(button => {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".sidebar ul li a").forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+</script>
+<style>
+    .sidebar ul li a.active {
+        background-color: #e0ebff;
+        color: #0056b3;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    .sidebar h2, .sidebar p {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .sidebar ul {
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+    }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+}
+
+.modal-content form {
+    text-align: center;
+}
+
+.modal-content form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: left;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.modal-content form input {
+    width: 80%;
+    padding: 8px;
+    margin: 5px auto; 
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content form select {
+    width: 83%;
+    padding: 8px;
+    margin: 5px auto; 
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content form button {
+    width: 83%;
+    margin-top: 10px;
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.modal-content form button:hover {
+    background: #218838;
+}
+
+
+
+</style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰ เมนู</button>
+<div class="sidebar" id="sidebar">
+    <h2>ข้อมูลทางการแพทย์</h2>
+    <ul>
+        <li><a href="user.html" class="menu-item">ข้อมูลแพทย์</a></li>
+        <li><a href="index.html" class="menu-item">นัดหมายคลินิก</a></li>
+    </ul>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <div class="time-zone">กำลังโหลดเวลา...</div>
+            <div class="actions">
+                <button class="btn-add" onclick="openModal()">เพิ่มข้อมูล</button>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="ค้นหา รหัสแพทย์ / ชื่อแพทย์" onkeyup="searchTable()">
+                    <button onclick="searchTable()">ค้นหา</button>
+                </div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>รหัสแพทย์</th>
+                    <th>ชื่อแพทย์</th>
+                    <th>อีเมล</th>
+                    <th>บทบาท</th>
+                    <th>สถานะ</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="user-table-body">
+         
+            </tbody>
+        </table>
+        
+    </div>
+
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>เพิ่มผู้ใช้ใหม่</h2>
+        <form id="add-user-form">
+            <label>รหัสแพทย์</label>
+            <input type="text" id="user_id" required>
+            <br>
+            <label>ชื่อแพทย์</label>
+            <input type="text" id="fullname_user" required>
+            <br>
+            <label>อีเมล</label>
+            <input type="email" id="email" required>
+            <br>
+            <label>บทบาท</label>
+            <select id="role">
+                <option value="doctor">Doctor</option>
+                <option value="nurse">Nurse</option>
+            </select>
+            <br>
+            <label>โรคประจำตัว</label>
+            <input type="text" id="chronic_disease">
+            <br>
+            <label>สถานะ</label>
+            <select id="status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <br>
+            <label>HN ผู้ป่วยที่เกี่ยวข้อง</label>
+            <input type="text" id="patient_id">
+            <br>
+            <button type="submit">เพิ่มผู้ใช้</button>
+            <button type="submit" id="save-changes-btn" style="display: none;">บันทึกการเปลี่ยนแปลง</button>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentPage = window.location.pathname.split("/").pop(); // ดึงชื่อไฟล์หน้าปัจจุบัน
+        const menuItems = document.querySelectorAll(".menu-item");
+
+        menuItems.forEach(item => {
+            if (item.getAttribute("href") === currentPage) {
+                item.classList.add("active"); // เพิ่มคลาส active เพื่อไฮไลต์เมนู
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+ 
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = Array.from(tooltipTriggerList).map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+ 
+        async function loadUsers() {
+            try {
+                const response = await fetch('https://med-rights-bn-final.vercel.app/getUsers');
+                const data = await response.json();
+    
+                if (data.error) {
+                    console.error("เกิดข้อผิดพลาด:", data.msg);
+                    return;
+                }
+    
+                const tableBody = document.getElementById("user-table-body");
+                tableBody.innerHTML = "";
+    
+                data.data.forEach(user => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${user.user_id}</td>
+                        <td>${user.fullname_user}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>${user.status}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editUser('${user.user_id}')">แก้ไข</button>
+                            <button class="btn-delete" onclick="deleteUser('${user.user_id}')">ลบ</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+    
+            } catch (error) {
+                console.error("Error loading users:", error);
+            }
+        }
+    
+        async function deleteUser(userId) {
+            if (!confirm("คุณต้องการลบผู้ใช้นี้ใช่หรือไม่?")) return;
+    
+            try {
+                const response = await fetch(`https://med-rights-bn-final.vercel.app/deleteUser/${userId}`, { method: "DELETE" });
+                const result = await response.json();
+    
+                if (result.error) {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                } else {
+                    alert("ลบผู้ใช้สำเร็จ");
+                    loadUsers();
+                }
+    
+            } catch (error) {
+                console.error("Error deleting user:", error);
+            }
+        }
+    
+     
+        document.addEventListener("DOMContentLoaded", loadUsers);
+    
+        window.onclick = function (event) {
+            var modal = document.getElementById("userModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+    
+   
+        document.getElementById("add-user-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+        
+            const userData = {
+                user_id: document.getElementById("user_id")?.value.trim() || "",
+                fullname_user: document.getElementById("fullname_user")?.value.trim() || "",
+                email: document.getElementById("email")?.value.trim() || "",
+                role: document.getElementById("role")?.value || "",
+                chronic_disease: document.getElementById("chronic_disease")?.value.trim() || "",
+                status: document.getElementById("status")?.value || "active",
+                patient_id: document.getElementById("patient_id")?.value.trim() || null  // แก้ให้เป็น null ถ้าไม่มีค่า
+            };
+        
+            console.log("📤 กำลังส่งข้อมูลไปยัง API:", JSON.stringify(userData, null, 2));
+        
+            // ✅ แก้ไขการตรวจสอบข้อมูลให้ถูกต้อง
+            if (!userData.user_id || !userData.fullname_user || !userData.email || !userData.role) {
+                alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                return;
+            }
+        
+            try {
+                const response = await fetch("https://med-rights-bn-final.vercel.app/addUser", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(userData)
+                });
+        
+                const result = await response.json();
+                console.log("ผลลัพธ์จาก API:", result);
+        
+                if (result.error) {
+                    alert("เกิดข้อผิดพลาด: " + result.msg);
+                } else {
+                    alert("✅ เพิ่มผู้ใช้สำเร็จ!");
+                    closeModal();
+                    document.getElementById("add-user-form").reset();
+                    loadUsers(); // โหลดข้อมูลใหม่
+                }
+            } catch (error) {
+                console.error("❌ Error adding user:", error);
+                alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล!");
+            }
+        });
+        
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".sidebar ul li a").forEach(link => {
+                link.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    
+                    if (this.textContent.trim() === "ข้อมูลแพทย์") {
+                        window.location.href = "user.html";
+                    } else if (this.textContent.trim() === "นัดหมายคลินิก") {
+                        window.location.href = "apt.html";
+                    }
+                });
+            });
+        });
+
+        function searchTable() {
+            const input = document.getElementById("search-input").value.toLowerCase();
+            const table = document.querySelector("table tbody");
+            const rows = table.getElementsByTagName("tr");
+    
+            for (let i = 0; i < rows.length; i++) {
+                let hnColumn = rows[i].getElementsByTagName("td")[0];
+                let nameColumn = rows[i].getElementsByTagName("td")[1];
+    
+                if (hnColumn && nameColumn) {
+                    let hnText = hnColumn.textContent.toLowerCase();
+                    let nameText = nameColumn.textContent.toLowerCase();
+    
+                    if (hnText.includes(input) || nameText.includes(input)) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        let editingUserId = null;
+
+        function openModal(isEdit = false) {
+            document.getElementById("userModal").style.display = "block";
+        
+            if (isEdit) {
+                document.getElementById("save-changes-btn").style.display = "block";
+                document.getElementById("add-user-form").querySelector("button[type='submit']").style.display = "none";
+            } else {
+                document.getElementById("save-changes-btn").style.display = "none";
+                document.getElementById("add-user-form").querySelector("button[type='submit']").style.display = "block";
+            }
+        }        
+        
+        function closeModal() {
+            document.getElementById("userModal").style.display = "none";
+            editingUserId = null;
+        
+            document.getElementById("add-user-form").reset();
+        
+            document.getElementById("add-user-form").querySelector("button[type='submit']").style.display = "block";
+            document.getElementById("save-changes-btn").style.display = "none";
+        }                
+
+        async function editUser(userId) {
+            try {
+                console.log(`🔍 Fetching user data for ID: ${userId}`);
+                
+                const response = await fetch(`https://med-rights-bn-final.vercel.app/getUser/${userId}`);
+                const user = await response.json();
+        
+                console.log("📥 API Response:", user);
+        
+                if (!user || user.error || !user.data) {
+                    alert("❌ เกิดข้อผิดพลาด: " + (user.msg || "ไม่พบข้อมูลผู้ใช้"));
+                    return;
+                }
+        
+                // ตรวจสอบว่า element มีอยู่ก่อนกำหนดค่า
+                const setFieldValue = (id, value) => {
+                    const field = document.getElementById(id);
+                    if (field) field.value = value ?? "";
+                };
+        
+                setFieldValue("user_id", user.data.user_id);
+                setFieldValue("fullname_user", user.data.fullname_user);
+                setFieldValue("email", user.data.email);
+                setFieldValue("role", user.data.role ?? "doctor");
+                setFieldValue("chronic_disease", user.data.chronic_disease);
+                setFieldValue("status", user.data.status ?? "active");
+                setFieldValue("patient_id", user.data.patient_id);
+        
+                editingUserId = userId;
+                openModal(true);
+        
+            } catch (error) {
+                console.error("❌ Error fetching user:", error);
+                alert("เกิดข้อผิดพลาดในการโหลดข้อมูล!");
+            }
+        }
+        
+        document.getElementById("save-changes-btn").addEventListener("click", async function (event) {
+            event.preventDefault();
+            if (!editingUserId) return alert("ไม่พบข้อมูลที่ต้องการแก้ไข!");
+        
+            const updatedUserData = {};
+        
+            const fullname_user = document.getElementById("fullname_user").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const role = document.getElementById("role").value;
+            const chronic_disease = document.getElementById("chronic_disease").value.trim();
+            const status = document.getElementById("status").value;
+            const patient_id = document.getElementById("patient_id").value.trim() || null;
+        
+            if (fullname_user) updatedUserData.fullname_user = fullname_user;
+            if (email) updatedUserData.email = email;
+            if (role) updatedUserData.role = role;
+            if (chronic_disease !== undefined) updatedUserData.chronic_disease = chronic_disease;
+            if (status) updatedUserData.status = status;
+            updatedUserData.patient_id = patient_id;
+        
+            if (Object.keys(updatedUserData).length === 0) {
+                alert("ไม่มีข้อมูลที่เปลี่ยนแปลง!");
+                return;
+            }
+        
+            try {
+                const response = await fetch(`https://med-rights-bn-final.vercel.app/editUser/${editingUserId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedUserData)
+                });
+        
+                const result = await response.json();
+                console.log("📤 API Response:", result);
+        
+                if (result.error) {
+                    alert("เกิดข้อผิดพลาด: " + result.msg);
+                } else {
+                    alert("แก้ไขข้อมูลสำเร็จ!");
+                    closeModal();
+                    loadUsers(); // โหลดข้อมูลใหม่หลังแก้ไข
+                }
+            } catch (error) {
+                console.error("❌ Error updating user:", error);
+                alert("เกิดข้อผิดพลาดในการอัปเดตข้อมูล!");
+            }
+        });
+        
+        
+    </script>

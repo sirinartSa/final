@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลทางการแพทย์</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f8ff;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 30px;
+            height: 100vh;
+            position: fixed;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h2 {
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 22px;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+        .sidebar ul li a {
+            color: #000000;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .container {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            max-width: 1000px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-add:hover {
+            background-color: #218838;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 8px;
+            background: white;
+        }
+        .search-box input {
+            border: none;
+            outline: none;
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+        }
+        .search-box button {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .search-box button:hover {
+            background: #138496;
+        }
+        .time-zone {
+            font-size: 16px;
+            color: #555;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+            margin-top: 10px;
+            background: #ffffff;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            font-size: 16px;
+        }
+        th {
+            background-color: #e5e7eb;
+            color: #000000;
+        }
+        td {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .status {
+            background-color: green;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .btn-edit {
+            background-color: orange;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-edit:hover {
+            background-color: #e69500;
+        }
+        .btn-delete {
+            background-color: red;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-delete:hover {
+            background-color: #cc0000;
+        }
+        .menu-item.active {
+            background-color: #cce5ff;
+            color: #007bff;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<script>
+    function updateTime() {
+        const timeZoneElement = document.querySelector(".time-zone");
+        if (timeZoneElement) {
+            const now = new Date();
+            const options = {
+                timeZone: "Asia/Bangkok",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            };
+    
+            const formatter = new Intl.DateTimeFormat("th-TH", options);
+            timeZoneElement.textContent = formatter.format(now);
+        }
+    }    
+
+    setInterval(updateTime, 1000);
+    updateTime();
+
+
+    document.querySelectorAll(".sidebar ul li a").forEach(button => {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".sidebar ul li a").forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+</script>
+<style>
+    .sidebar ul li a.active {
+        background-color: #e0ebff;
+        color: #0056b3;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    .sidebar h2, .sidebar p {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .sidebar ul {
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+    }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+}
+
+.modal-content form {
+    text-align: center;
+}
+
+.modal-content form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: left;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.modal-content form input {
+    width: 80%;
+    padding: 8px;
+    margin: 5px auto; 
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content form select {
+    width: 83%;
+    padding: 8px;
+    margin: 5px auto; 
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content form button {
+    width: 83%;
+    margin-top: 10px;
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.modal-content form button:hover {
+    background: #218838;
+}
+
+
+
+</style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰ เมนู</button>
+<div class="sidebar" id="sidebar">
+    <h2>ข้อมูลทางการแพทย์</h2>
+    <ul>
+        <li><a href="user.html" class="menu-item">ข้อมูลแพทย์</a></li>
+        <li><a href="apt.html" class="menu-item">นัดหมายคลินิก</a></li>
+    </ul>
+            
+</div>
+
+    <div class="container">
+        <div class="header">
+            <div class="time-zone">กำลังโหลดเวลา...</div>
+            <div class="actions">
+                <button class="btn-add" onclick="openModal()">เพิ่มข้อมูล</button>
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="ค้นหา HN / ชื่อผู้ป่วย" onkeyup="searchTable()">
+                    <button onclick="searchTable()">ค้นหา</button>
+                </div>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>HN</th>
+                    <th>ชื่อผู้ป่วย</th>
+                    <th>วัน-เวลาที่นัด</th>
+                    <th>คลินิกที่นัด</th>
+                    <th>ชื่อแพทย์ผู้รักษา</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="appointment-table-body">
+            </tbody>
+        </table>      
+    </div>
+
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>เพิ่มข้อมูลนัดหมาย</h2>
+            <form id="appointment-form">
+                <label>HN (Patient ID)</label>
+                <input type="text" id="patient_id" required>
+    
+                <label>วัน-เวลาที่นัด</label>
+                <input type="datetime-local" id="appointment_date" required>
+    
+                <label>คลินิกที่นัด</label>
+                <input type="text" id="clinic" required>
+    
+                <label>แพทย์ผู้รักษา (User ID)</label>
+                <input type="text" id="user_id" required>
+    
+                <button type="submit">บันทึก</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editAppointmentModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeEditModal()" class="close">&times;</span>
+            <h2>แก้ไขนัดหมาย</h2>
+            <form id="edit-appointment-form">
+                <label>รหัสนัดหมาย</label>
+                <input type="text" id="edit_appointment_id" readonly>
+    
+                <label>รหัสผู้ป่วย</label>
+                <input type="text" id="edit_patient_id" required>
+    
+                <label>วันที่และเวลา</label>
+                <input type="datetime-local" id="edit_appointment_date" required>
+    
+                <label>คลินิก</label>
+                <input type="text" id="edit_clinic" required>
+    
+                <label>รหัสผู้ใช้</label>
+                <input type="text" id="edit_user_id" required>
+    
+                <button type="submit">บันทึกการแก้ไข</button>
+            </form>
+        </div>
+    </div>
+    
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPage = window.location.pathname.split("/").pop(); // ดึงชื่อไฟล์หน้าปัจจุบัน
+            const menuItems = document.querySelectorAll(".menu-item");
+    
+            menuItems.forEach(item => {
+                if (item.getAttribute("href") === currentPage) {
+                    item.classList.add("active"); // เพิ่มคลาส active เพื่อไฮไลต์เมนู
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    
+    function openEditModal(appointment) {
+        const modal = document.getElementById("editAppointmentModal");
+        if (modal) {
+            document.getElementById("edit_appointment_id").value = appointment.appointment_id;
+            document.getElementById("edit_patient_id").value = appointment.patient_id;
+
+            const appointmentDate = appointment.appointment_date ? new Date(appointment.appointment_date).toISOString().slice(0, 16) : "";
+            document.getElementById("edit_appointment_date").value = appointmentDate;
+            
+            document.getElementById("edit_clinic").value = appointment.clinic;
+            document.getElementById("edit_user_id").value = appointment.user_id;
+    
+            modal.style.display = "block";
+        } else {
+            console.error("ไม่พบ Modal ที่มี ID 'editAppointmentModal'");
+        }
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById("editAppointmentModal");
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function openModal() {
+        const modal = document.getElementById("appointmentModal");
+        if (modal) {
+            modal.style.display = "block";
+        }
+    }
+
+    function closeModal() {
+        const modal = document.getElementById("appointmentModal");
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    //  ปิด Modal เมื่อกดพื้นที่นอก
+    window.onclick = function(event) {
+        if (event.target === document.getElementById("editAppointmentModal")) {
+            closeEditModal();
+        }
+        if (event.target === document.getElementById("appointmentModal")) {
+            closeModal();
+        }
+    };
+
+    //  อัปเดตข้อมูลเมื่อแก้ไขนัดหมาย
+    document.getElementById("edit-appointment-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+    
+        const updatedAppointment = {
+            appointment_id: document.getElementById("edit_appointment_id").value,
+            patient_id: document.getElementById("edit_patient_id").value.trim(),
+            appointment_date: document.getElementById("edit_appointment_date").value,
+            clinic: document.getElementById("edit_clinic").value.trim(),
+            user_id: document.getElementById("edit_user_id").value.trim()
+        };
+    
+        try {
+            const response = await fetch(`https://med-rights-bn-final.vercel.app/updateAppointment/${updatedAppointment.appointment_id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedAppointment)
+            });
+    
+            const result = await response.json();
+    
+            if (result.error) {
+                alert("เกิดข้อผิดพลาด: " + result.msg);
+            } else {
+                alert("แก้ไขนัดหมายสำเร็จ!");
+                closeEditModal();
+                loadAppointments();
+            }
+        } catch (error) {
+            console.error("Error updating appointment:", error);
+            alert("เกิดข้อผิดพลาด!");
+        }
+    });
+
+    // อัปเดตข้อมูลเมื่อเพิ่มนัดหมายใหม่
+    document.getElementById("appointment-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+    
+        // ดึงค่าและ trim เพื่อป้องกันช่องว่าง
+        const patientId = document.getElementById("patient_id").value.trim();
+        const rawDate = document.getElementById("appointment_date").value;
+        const clinic = document.getElementById("clinic").value.trim();
+        const userId = document.getElementById("user_id").value.trim();
+    
+        // ตรวจสอบว่าเลือกวันที่หรือยัง
+        if (!rawDate) {
+            alert("กรุณาเลือกวันที่ให้ถูกต้อง");
+            return;
+        }
+    
+        // แปลงวันที่ให้อยู่ใน Timezone Asia/Bangkok
+        const appointmentDate = new Date(rawDate).toLocaleString("th-TH", {
+            timeZone: "Asia/Bangkok",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        });
+    
+        const newAppointment = { patient_id: patientId, appointment_date: appointmentDate, clinic, user_id: userId };
+    
+        try {
+            const response = await fetch('https://med-rights-bn-final.vercel.app/addAppointment', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newAppointment)
+            });
+    
+            const result = await response.json();
+    
+            if (result.error) {
+                alert("❌ เกิดข้อผิดพลาด: " + result.msg);
+            } else {
+                alert("✅ เพิ่มนัดหมายสำเร็จ!");
+                closeModal();
+                document.getElementById("appointment-form").reset();
+                loadAppointments();
+            }
+        } catch (error) {
+            console.error("❌ Error adding appointment:", error);
+            alert("เกิดข้อผิดพลาดในการส่งข้อมูล!");
+        }
+    });
+
+    function openEditModal(button) {
+        const modal = document.getElementById("editAppointmentModal");
+    
+        if (modal) {
+            // อ่านข้อมูลจาก data-appointment ของปุ่ม
+            const appointment = JSON.parse(button.getAttribute("data-appointment"));
+    
+            document.getElementById("edit_appointment_id").value = appointment.appointment_id;
+            document.getElementById("edit_patient_id").value = appointment.patient_id;
+            
+            const appointmentDate = appointment.appointment_date
+                ? new Date(appointment.appointment_date).toISOString().slice(0, 16)
+                : "";
+            document.getElementById("edit_appointment_date").value = appointmentDate;
+    
+            document.getElementById("edit_clinic").value = appointment.clinic;
+            document.getElementById("edit_user_id").value = appointment.user_id;
+    
+            modal.style.display = "block";
+        } else {
+            console.error("ไม่พบ Modal ที่มี ID 'editAppointmentModal'");
+        }
+    }
+    
+    
+    function closeEditModal() {
+        const modal = document.getElementById("editAppointmentModal");
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+    
+    window.onclick = function (event) {
+        if (event.target === document.getElementById("editAppointmentModal")) {
+            closeEditModal();
+        }
+        if (event.target === document.getElementById("appointmentModal")) {
+            closeModal();
+        }
+    };
+    
+    document.getElementById("edit-appointment-form").addEventListener("submit", async function (event) {
+        event.preventDefault();
+    
+        const updatedAppointment = {
+            appointment_id: document.getElementById("edit_appointment_id").value,
+            patient_id: document.getElementById("edit_patient_id").value.trim(),
+            appointment_date: document.getElementById("edit_appointment_date").value,
+            clinic: document.getElementById("edit_clinic").value.trim(),
+            user_id: document.getElementById("edit_user_id").value.trim()
+        };
+    
+        try {
+            const response = await fetch(
+                `https://med-rights-bn-final.vercel.app/updateAppointment/${updatedAppointment.appointment_id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedAppointment)
+                }
+            );
+    
+            const result = await response.json();
+    
+            if (result.error) {
+                alert("เกิดข้อผิดพลาด: " + result.msg);
+            } else {
+                alert("แก้ไขนัดหมายสำเร็จ!");
+                closeEditModal();
+                loadAppointments();
+            }
+        } catch (error) {
+            console.error("Error updating appointment:", error);
+            alert("เกิดข้อผิดพลาด!");
+        }
+    });
+    
+            
+
+
+    // โหลดข้อมูลนัดหมาย
+    async function loadAppointments() {
+        try {
+            const response = await fetch('https://med-rights-bn-final.vercel.app/getAppointments');
+            const data = await response.json();
+    
+            if (data.error) {
+                console.error("เกิดข้อผิดพลาด:", data.msg);
+                return;
+            }
+    
+            const tableBody = document.getElementById("appointment-table-body");
+            tableBody.innerHTML = "";
+    
+            data.data.forEach(appointment => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${appointment.patient_id}</td>
+                    <td>${appointment.first_name} ${appointment.last_name}</td>
+                    <td>${appointment.appointment_date}</td>
+                    <td>${appointment.clinic}</td>
+                    <td>${appointment.doctor_name}</td>
+                    <td>
+                        <button class="btn-edit" data-id="${appointment.appointment_id}">แก้ไข</button>
+                        <button class="btn-delete" data-id="${appointment.appointment_id}">ลบ</button>
+                    </td>
+                `;
+    
+                tableBody.appendChild(row);
+            });
+    
+        } catch (error) {
+            console.error("Error loading appointments:", error);
+        }
+    }
+    
+    document.addEventListener("DOMContentLoaded", loadAppointments);
+    
+    // ค้นหาและเปิด Modal แก้ไข
+    document.addEventListener("click", function(event) {
+        if (event.target.classList.contains("btn-edit")) {
+            const appointmentId = event.target.getAttribute("data-id");
+    
+            fetch(`https://med-rights-bn-final.vercel.app/getAppointment/${appointmentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("ไม่พบข้อมูลนัดหมาย");
+                    } else {
+                        openEditModal(data.data);
+                    }
+                })
+                .catch(error => console.error("Error fetching appointment:", error));
+        }
+    });
+
+    // ลบนัดหมาย
+    document.addEventListener("click", function(event) {
+        if (event.target.classList.contains("btn-delete")) {
+            const appointmentId = event.target.getAttribute("data-id");
+            if (confirm("คุณต้องการลบนัดหมายนี้ใช่หรือไม่?")) {
+                deleteAppointment(appointmentId);
+            }
+        }
+    });
+
+    async function deleteAppointment(appointmentId) {
+        try {
+            const response = await fetch(`https://med-rights-bn-final.vercel.app/deleteAppointment/${appointmentId}`, { method: "DELETE" });
+            const result = await response.json();
+    
+            if (result.error) {
+                alert("เกิดข้อผิดพลาด: " + result.message);
+            } else {
+                alert("ลบนัดหมายสำเร็จ");
+                loadAppointments();
+            }
+    
+        } catch (error) {
+            console.error("Error deleting appointment:", error);
+        }
+    }
+
+    function searchTable() {
+        const input = document.getElementById("search-input").value.toLowerCase();
+        const table = document.querySelector("table tbody");
+        const rows = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            let hnColumn = rows[i].getElementsByTagName("td")[0];
+            let nameColumn = rows[i].getElementsByTagName("td")[1];
+
+            if (hnColumn && nameColumn) {
+                let hnText = hnColumn.textContent.toLowerCase();
+                let nameText = nameColumn.textContent.toLowerCase();
+
+                if (hnText.includes(input) || nameText.includes(input)) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+</script>
